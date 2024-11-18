@@ -830,7 +830,7 @@ export function ConsolePage() {
 						</div>
 					</div>
 
-					<div className='w-full md:w-[400px] bg-[#FFF]/10 hover:bg-[#FFF]/20 transition-all ease-in-out duration-300 glassmorphism rounded-xl cursor-pointer' onClick={() => handleChangeRole('Sales')}>
+					{/* <div className='w-full md:w-[400px] bg-[#FFF]/10 hover:bg-[#FFF]/20 transition-all ease-in-out duration-300 glassmorphism rounded-xl cursor-pointer' onClick={() => handleChangeRole('Sales')}>
 						<div className="w-full p-4">
 
 							<Field>
@@ -910,7 +910,7 @@ export function ConsolePage() {
 								</div>
 							</Field>
 						</div>
-					</div>
+					</div> */}
 
 
 				</div>

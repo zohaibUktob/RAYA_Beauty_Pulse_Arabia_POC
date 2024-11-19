@@ -342,8 +342,9 @@ export function ConsolePage() {
 
 		client.addTool(
 			{
-				name: 'save_user_and_order_info',
-				description: 'Saves and updates user and order information throughout the conversation. Each call will update the specified fields while preserving other existing information.',
+				name: 'save_customer_appointment_info',
+				description:
+					'Saves and updates customer appointment information throughout the conversation. Each call will update the specified fields while preserving other existing information.',
 				parameters: {
 					type: 'object',
 					properties: {
@@ -351,222 +352,90 @@ export function ConsolePage() {
 							type: 'string',
 							description: "Customer's full name (mandatory)"
 						},
-						address: {
+						services: {
 							type: 'string',
-							description: 'Delivery or billing address of the user (mandatory)'
+							description: 'Services the customer is interested in or has booked (mandatory)'
 						},
-						phone_number: {
+						appointment_time: {
 							type: 'string',
-							description: "Customer's phone number (mandatory)"
+							description: 'The time of the appointment (e.g., "2023-11-25 14:00") (mandatory)'
 						},
-						order_details_with_quantity: {
+						special_requests: {
 							type: 'string',
-							description: 'Details of the items ordered - order details with quantity of each item, comma separated in case of multiple items (mandatory)'
-						},
-						payment_method: {
-							type: 'string',
-							description: 'Method of payment (e.g., credit card, cash, etc.) (mandatory)'
-						},
-						order_summary_with_confirmation_and_est_time: {
-							type: 'string',
-							description: 'Summarize the user’s order with important details, provide a confirmation number, and state that the order will be delivered within 30-45 minutes (mandatory)'
+							description: 'Any special requests or notes from the customer (optional), None in case of no special requests'
 						}
 					},
 					required: [
 						'customer_name',
-						'address',
-						'phone_number',
-						'order_details_with_quantity',
-						'payment_method',
-						'order_summary_with_confirmation_and_est_time'
+						'services',
+						'appointment_time',
+						'special_requests'
 					]
 				}
 			},
 			async (params: {
 				customer_name?: string,
-				address?: string,
-				phone_number?: string,
-				order_details_with_quantity?: string,
-				payment_method?: string,
-				order_summary_with_confirmation_and_est_time?: string
+				services?: string,
+				appointment_time?: string,
+				special_requests?: string
 			}) => {
+				// Define the AppointmentInfo interface
+				interface AppointmentInfo {
+					customer_name?: string;
+					services?: string;
+					appointment_time?: string;
+					special_requests?: string;
+					last_updated?: string;
+				}
+
+				// Initialize an object to store appointment information
+				let appointmentInfo: AppointmentInfo = {};
+
 				// Update the memoryKv state while preserving existing data
 				setMemoryKv((currentMemoryKv) => {
 					const newKv = { ...currentMemoryKv };
 
-					// Only update the fields that are provided
+					// Only update the fields that are provided and store them in appointmentInfo
 					if (params.customer_name) {
 						newKv.customer_name = params.customer_name;
+						appointmentInfo.customer_name = params.customer_name;
 					}
-					if (params.address) {
-						newKv.address = params.address;
+					if (params.services) {
+						newKv.services = params.services;
+						appointmentInfo.services = params.services;
 					}
-					if (params.phone_number) {
-						newKv.phone_number = params.phone_number;
-					}
-					if (params.order_details_with_quantity) {
-						newKv.order_details_with_quantity = params.order_details_with_quantity;
-					}
-					if (params.payment_method) {
-						newKv.payment_method = params.payment_method;
-					}
-					if (params.order_summary_with_confirmation_and_est_time) {
-						newKv.order_summary_with_confirmation_and_est_time = params.order_summary_with_confirmation_and_est_time;
-					}
-
-					// Add timestamp for tracking updates
-					newKv.last_updated = new Date().toISOString();
-
-					return newKv;
-				});
-
-				return {
-					ok: true,
-					message: 'Order information updated successfully'
-				};
-			}
-		);
-
-		client.addTool(
-			{
-				name: 'save_travel_user_and_airline_booking_information',
-				description: 'Saves and updates user and order information throughout the conversation. Each call will update the specified fields while preserving other existing information.',
-				parameters: {
-					type: 'object',
-					properties: {
-						passenger_names: {
-							type: 'string',
-							description: "Names of the passenger(s) travelling ,comma seperated in case of multiple users"
-						},
-						departure: {
-							type: 'string',
-							description: 'departure city or airport'
-						},
-						arrival: {
-							type: 'string',
-							description: 'arrival city or airport'
-						},
-						date_and_time_of_journey: {
-							type: 'string',
-							description: 'Date , day and time of journey'
-						},
-						flight_details: {
-							type: 'string',
-							description: 'Flight number and any additional details'
-						},
-						cabin_class_type: {
-							type: 'string',
-							description: 'class of cabin based on users preference(e.g. economy , business or first class)'
-						},
-						special_requests: {
-							type: 'string',
-							description: 'Any special requests e.g., Seat related information or other preferences'
-						},
-						final_booking_confirmation: {
-							type: 'string',
-							description: 'Booking confirmation number along with booking details'
-						}
-					},
-					// Making all parameters optional so we can update them individually
-					required: ['passenger_names', 'departure', 'arrival', 'date_and_time_of_journey', 'flight_details', 'cabin_class_type', 'special_requests', 'final_booking_confirmation']
-				}
-			},
-			async (params: {
-				passenger_names?: string,
-				departure?: string,
-				arrival?: string,
-				date_and_time_of_journey?: string,
-				flight_details?: string,
-				cabin_class_type?: string,
-				special_requests?: string,
-				final_booking_confirmation?: string
-			}) => {
-				// Update the memoryKv state while preserving existing data
-				setMemoryKv((currentMemoryKv) => {
-					const newKv = { ...currentMemoryKv };
-
-					// Only update the fields that are provided
-					if (params.passenger_names) {
-						newKv.passenger_names = params.passenger_names;
-					}
-					if (params.departure) {
-						newKv.departure = params.departure;
-					}
-					if (params.arrival) {
-						newKv.arrival = params.arrival;
-					}
-					if (params.date_and_time_of_journey) {
-						newKv.date_and_time_of_journey = params.date_and_time_of_journey;
-					}
-					if (params.flight_details) {
-						newKv.flight_details = params.flight_details;
-					}
-					if (params.cabin_class_type) {
-						newKv.cabin_class_type = params.cabin_class_type;
+					if (params.appointment_time) {
+						newKv.appointment_time = params.appointment_time;
+						appointmentInfo.appointment_time = params.appointment_time;
 					}
 					if (params.special_requests) {
 						newKv.special_requests = params.special_requests;
-					}
-					if (params.final_booking_confirmation) {
-						newKv.final_booking_confirmation = params.final_booking_confirmation;
+						appointmentInfo.special_requests = params.special_requests;
+					} else if (newKv.special_requests) {
+						// Include existing special_requests if not updated
+						appointmentInfo.special_requests = newKv.special_requests;
+					} else {
+						// Default value if special_requests is not provided
+						newKv.special_requests = 'None';
+						appointmentInfo.special_requests = 'None';
 					}
 
 					// Add timestamp for tracking updates
-					newKv.last_updated = new Date().toISOString();
+					const timestamp = new Date().toISOString();
+					newKv.last_updated = timestamp;
+					appointmentInfo.last_updated = timestamp;
 
 					return newKv;
 				});
 
 				return {
 					ok: true,
-					message: 'Booking information updated successfully'
+					message: 'Appointment information updated successfully',
+					appointment_info: appointmentInfo
 				};
 			}
 		);
 
-		// client.addTool(
-		// 	{
-		// 		name: 'get_weather',
-		// 		description:
-		// 			'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
-		// 		parameters: {
-		// 			type: 'object',
-		// 			properties: {
-		// 				lat: {
-		// 					type: 'number',
-		// 					description: 'Latitude',
-		// 				},
-		// 				lng: {
-		// 					type: 'number',
-		// 					description: 'Longitude',
-		// 				},
-		// 				location: {
-		// 					type: 'string',
-		// 					description: 'Name of the location',
-		// 				},
-		// 			},
-		// 			required: ['lat', 'lng', 'location'],
-		// 		},
-		// 	},
-		// 	async ({ lat, lng, location }: { [key: string]: any }) => {
-		// 		setMarker({ lat, lng, location });
-		// 		setCoords({ lat, lng, location });
-		// 		const result = await fetch(
-		// 			`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-		// 		);
-		// 		const json = await result.json();
-		// 		const temperature = {
-		// 			value: json.current.temperature_2m as number,
-		// 			units: json.current_units.temperature_2m as string,
-		// 		};
-		// 		const wind_speed = {
-		// 			value: json.current.wind_speed_10m as number,
-		// 			units: json.current_units.wind_speed_10m as string,
-		// 		};
-		// 		setMarker({ lat, lng, location, temperature, wind_speed });
-		// 		return json;
-		// 	}
-		// );
 
 		// handle realtime events from client + server for event logging
 		client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
@@ -794,7 +663,7 @@ export function ConsolePage() {
 
 							<Field>
 								<div className='w-full flex items-center justify-between'>
-									<Label className="text-sm/6 font-medium text-white">AI Travel Concierge</Label>
+									<Label className="text-sm/6 font-medium text-white">Raya</Label>
 									{
 										role === 'Travel' &&
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#FFF" className="size-5">
